@@ -30,6 +30,10 @@ db.once('open', function () {
     });
 });
 
+app.get('/', (req, res) => {
+    res.send('Hello, World!');
+});
+
 app.post('/login', async (req, res) => {
     const { userid, userpw } = req.body;
     try {
@@ -98,6 +102,7 @@ wss.on('connection', (ws) => {
         console.log('Client disconnected');
     });
 });
+
 
 server.listen(PORT, () => {
     console.log(`API server running on http://localhost:${PORT}`);
