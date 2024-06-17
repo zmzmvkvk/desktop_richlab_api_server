@@ -65,29 +65,25 @@ app.get('/verify-token', (req, res) => {
 });
 
 app.get('/user-info', async (req, res) => {
-    console.log(req.headers)
     const token = req.headers['authorization'];
+
     if (!token) {
-        return res.status(401).send({ success: false, message: 'No token provided.' });
+        return res.status(401).json({ success: false, message: '토큰이 필요합니다.' });
     }
 
-    jwt.verify(token, SECRET_KEY, async (err, decoded) => {
-        if (err) {
-            return res.status(500).send({ success: false, message: 'Failed to authenticate token.' });
-        }
+    const decoded = verifyToken(token.split(' ')[1]); // 'Bearer ' 부분 제거
 
-        try {
-            const user = await User.findOne({ userid: decoded.userid });
+    if (!decoded) {
+        return res.status(401).json({ success: false, message: '유효하지 않은 토큰입니다.' });
+    }
 
-            if (!user) {
-                return res.status(404).send({ success: false, message: 'User not found.' });
-            }
+    const userInfo = decoded.userid;
 
-            res.status(200).send({ success: true, user });
-        } catch (err) {
-            res.status(500).send({ success: false, message: 'Failed to fetch user info.' });
-        }
-    });
+    if (!userInfo) {
+        return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+    }
+    
+    return res.json({ success: true, data: userInfo });
 });
 
 const server = http.createServer(app);
