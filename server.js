@@ -65,6 +65,7 @@ app.get('/verify-token', (req, res) => {
 });
 
 app.get('/user-info', async (req, res) => {
+    console.log(req.headers)
     const token = req.headers['authorization'];
     if (!token) {
         return res.status(401).send({ success: false, message: 'No token provided.' });
