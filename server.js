@@ -34,6 +34,15 @@ app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
 
+// JWT 토큰 검증 함수
+const verifyToken = (token) => {
+    try {
+        return jwt.verify(token, SECRET_KEY);
+    } catch (err) {
+        return null;
+    }
+};
+
 app.post('/login', async (req, res) => {
     const { userid, userpw } = req.body;
     try {
@@ -77,14 +86,24 @@ app.get('/user-info', async (req, res) => {
         return res.status(401).json({ success: false, message: '유효하지 않은 토큰입니다.' });
     }
 
-    const userInfo = decoded.userid;
+    const userId = decoded.userid;
 
-    if (!userInfo) {
+    if (!userId) {
         return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
     }
-    
-    return res.json({ success: true, data: userInfo });
+
+    try {
+        const user = await User.findOne({ userid: userId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' });
+        }
+        return res.json({ success: true, data: user });
+    } catch (error) {
+        console.error('Database error:', error);
+        return res.status(500).json({ success: false, message: '서버 오류가 발생했습니다.' });
+    }
 });
+
 
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
